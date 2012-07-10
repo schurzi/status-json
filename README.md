@@ -4,7 +4,7 @@ A Nagios controller that returns JSON instead of HTML.
 Supports JSONP.
 Properly escapes values read from Nagios services (like the description)
 
-Re-uses code from [status-json][1] plugin.
+Re-uses code from [status-json][1] plugin in version 2.0.
 
 
 Credits
