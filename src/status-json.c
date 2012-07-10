@@ -58,6 +58,7 @@ extern servicegroup *servicegroup_list;
 extern hoststatus *hoststatus_list;
 extern servicestatus *servicestatus_list;
 
+char *status_json_encoded_html_string = NULL;
 
 #define MAX_MESSAGE_BUFFER		4096
 
@@ -118,6 +119,8 @@ void show_hostgroup_grid(hostgroup *);
 
 int passes_host_properties_filter(hoststatus *);
 int passes_service_properties_filter(servicestatus *);
+
+char *status_json_html_encode(char *, int);
 
 void document_header(int);
 void document_footer(void);
@@ -1100,7 +1103,7 @@ printf("\t\t\t\t }, \n");
 			service_current_attempt=temp_status->current_attempt;
 			service_max_attempts=temp_status->max_attempts;
 
-			service_plugin_output=(temp_status->plugin_output==NULL)?"":html_encode(temp_status->plugin_output,TRUE);
+			service_plugin_output=(temp_status->plugin_output==NULL)?"":status_json_html_encode(temp_status->plugin_output,TRUE);
 
 			last_host=temp_status->host_name;
 
@@ -1372,7 +1375,7 @@ printf("\t\t{\n");
 			state_duration[sizeof(state_duration)-1]='\x0';
 			host_state_duration=state_duration;
 
-			host_plugin_output=(temp_status->plugin_output==NULL)?"":html_encode(temp_status->plugin_output,TRUE);
+			host_plugin_output=(temp_status->plugin_output==NULL)?"":status_json_html_encode(temp_status->plugin_output,TRUE);
 
 printf("\t\t\t \"host_status\":\"%s\", \n", host_status);
 printf("\t\t\t \"host_address\":\"%s\", \n", host_address);
@@ -3287,4 +3290,92 @@ int passes_service_properties_filter(servicestatus *temp_servicestatus){
         }
 
 
+/**
+ * escapes a string used in HTML
+ *
+ * copied from cgiutils.c with the additional functionality to escape double quotes since those are not allowed in JSON values.
+ */
+char * status_json_html_encode(char *input, int escape_newlines) {
+	int len, output_len;
+	int x, y;
+	char temp_expansion[10];
 
+	/* we need up to six times the space to do the conversion */
+	len = (int)strlen(input);
+	output_len = len * 6;
+	if((status_json_encoded_html_string = (char *)malloc(output_len + 1)) == NULL)
+		return "";
+
+	strcpy(status_json_encoded_html_string, "");
+
+	for(x = 0, y = 0; x <= len; x++) {
+
+		/* end of string */
+		if((char)input[x] == (char)'\x0') {
+			status_json_encoded_html_string[y] = '\x0';
+			break;
+			}
+
+		/* alpha-numeric characters and spaces don't get encoded */
+		else if(((char)input[x] == (char)' ') || ((char)input[x] >= '0' && (char)input[x] <= '9') || ((char)input[x] >= 'A' && (char)input[x] <= 'Z') || ((char)input[x] >= (char)'a' && (char)input[x] <= (char)'z'))
+			status_json_encoded_html_string[y++] = input[x];
+
+		/* newlines turn to <BR> tags */
+		else if(escape_newlines == TRUE && (char)input[x] == (char)'\n') {
+			strcpy(&status_json_encoded_html_string[y], "<BR>");
+			y += 4;
+			}
+		else if(escape_newlines == TRUE && (char)input[x] == (char)'\\' && (char)input[x + 1] == (char)'n') {
+			strcpy(&status_json_encoded_html_string[y], "<BR>");
+			y += 4;
+			x++;
+			}
+
+		/* TODO - strip all but allowed HTML tags out... */
+
+		else if((char)input[x] == (char)'<') {
+
+				status_json_encoded_html_string[y] = '\x0';
+				if((int)strlen(status_json_encoded_html_string) < (output_len - 4)) {
+					strcat(status_json_encoded_html_string, "&lt;");
+					y += 4;
+					}
+
+			}
+
+		else if((char)input[x] == (char)'>') {
+
+				status_json_encoded_html_string[y] = '\x0';
+				if((int)strlen(status_json_encoded_html_string) < (output_len - 4)) {
+					strcat(status_json_encoded_html_string, "&gt;");
+					y += 4;
+					}
+
+			}
+
+                else if((char)input[x] == (char)'"') {
+
+                                status_json_encoded_html_string[y] = '\x0';
+                                if((int)strlen(status_json_encoded_html_string) < (output_len - 3)) {
+                                        strcat(status_json_encoded_html_string, "\\""");
+                                        y += 3;
+                                        }
+
+                        }
+
+		/* for simplicity, all other chars represented by their numeric value */
+		else {
+
+				status_json_encoded_html_string[y] = '\x0';
+				sprintf(temp_expansion, "&#%d;", (unsigned char)input[x]);
+				if((int)strlen(status_json_encoded_html_string) < (output_len - strlen(temp_expansion))) {
+					strcat(status_json_encoded_html_string, temp_expansion);
+					y += strlen(temp_expansion);
+					}
+				}
+		}
+
+	status_json_encoded_html_string[y++] = '\x0';
+
+	return status_json_encoded_html_string;
+	}
