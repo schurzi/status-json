@@ -133,6 +133,7 @@ char *host_filter=NULL;
 char *hostgroup_name=NULL;
 char *servicegroup_name=NULL;
 char *service_filter=NULL;
+char *callback=NULL;
 int host_alert=FALSE;
 int show_all_hosts=TRUE;
 int show_all_hostgroups=TRUE;
@@ -295,6 +296,10 @@ void document_header(int use_stylesheet){
 	if(embedded==TRUE)
 		return;
 
+	if(callback!=NULL) {
+	  printf("%s(",callback);
+	}
+
 	/* include user SSI header */
 /*	include_ssi_files(STATUS_CGI,SSI_HEADER); */
 
@@ -303,6 +308,11 @@ void document_header(int use_stylesheet){
 
 
 void document_footer(void){
+
+
+	if(callback!=NULL) {
+	  printf(")");
+	}
 
 	if(embedded==TRUE)
 		return;
@@ -500,6 +510,20 @@ int process_cgivars(void){
                         service_filter=strdup(variables[x]);
 			strip_html_brackets(service_filter);
                         }
+
+
+                /* we found the callback argument */
+                else if(!strcmp(variables[x],"callback")){
+                    x++;
+                    if(variables[x]==NULL){
+                        error=TRUE;
+                        break;
+                    }
+
+                    callback=strdup(variables[x]);
+                    strip_html_brackets(callback);
+                    }
+
 	        }
 
 	/* free memory allocated to the CGI variables */
