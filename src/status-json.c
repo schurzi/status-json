@@ -843,11 +843,34 @@ printf("\t[\n");
 	/* check all services... */
 	while(1){
 
-	    service_problem_has_been_acknowledged=FALSE;
-	    service_checks_enabled=TRUE;
-	    service_accept_passive_service_checks=TRUE;
-	    service_notifications_enabled=TRUE;
-	    service_is_flapping=FALSE;
+		service_last_check="";
+		service_status="";
+		host_status=0;
+		host_address="";
+		host_problem_has_been_acknowledged=FALSE;
+		host_has_comments=0;
+		host_notifications_enabled=TRUE;
+		host_checks_enabled=TRUE;
+		host_is_flapping=FALSE;
+		host_scheduled_downtime_depth=0;
+		host_notes_url="";
+		host_action_url="";
+		host_icon_image="";
+		service_description="";
+		service_has_comments=0;
+		service_problem_has_been_acknowledged=FALSE;
+		service_checks_enabled=TRUE;
+		service_accept_passive_service_checks=TRUE;
+		service_notifications_enabled=TRUE;
+		service_is_flapping=FALSE;
+		service_scheduled_downtime_depth=0;
+		service_notes_url="";
+		service_action_url="";
+		service_icon_image="";
+		service_state_duration="";
+		service_current_attempt=0;
+		service_max_attempts=0;
+		service_plugin_output="";
 
 		/* get the next service to display */
 		if(use_sort==TRUE){
@@ -1229,6 +1252,21 @@ printf("\t[\n");
 	/* the main list of hosts */
 	/* check all hosts... */
 	while(1){
+
+		host_status="";
+		host_address="";
+		host_problem_has_been_acknowledged=FALSE;
+		host_has_comments=0;
+		host_notifications_enabled=TRUE;
+		host_checks_enabled=TRUE;
+		host_is_flapping=FALSE;
+		host_scheduled_downtime_depth=0;
+		host_notes_url="";
+		host_action_url="";
+		host_icon_image="";
+		host_state_duration="";
+		host_last_check="";
+		host_plugin_output="";
 
 		/* get the next service to display */
 		if(use_sort==TRUE){
