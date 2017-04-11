@@ -3391,15 +3391,15 @@ char * status_json_html_encode(char *input, int escape_newlines) {
 
 			}
 
-                else if((char)input[x] == (char)'"') {
+        else if((char)input[x] == (char)'"') {
 
-                                status_json_encoded_html_string[y] = '\x0';
-                                if((int)strlen(status_json_encoded_html_string) < (output_len - 3)) {
-                                        strcat(status_json_encoded_html_string, "\\""");
-                                        y += 3;
-                                        }
+                status_json_encoded_html_string[y] = '\x0';
+                if((int)strlen(status_json_encoded_html_string) < (output_len - 3)) {
+                    strcat(status_json_encoded_html_string, "\\\"");
+                    y += 2;
+                    }
 
-                        }
+            }
 
 		/* for simplicity, all other chars represented by their numeric value */
 		else {
